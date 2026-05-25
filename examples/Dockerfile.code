@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+                pandas==2.0.3 \
+                numpy==1.24.3 \
+            "dagster>=1.9.0" \
+            "dagster-postgres>=0.23.5" \
+            psycopg2-binary==2.9.9
+
+ENV DAGSTER_HOME=/opt/dagster/dagster_home
+RUN mkdir -p $DAGSTER_HOME
+
+WORKDIR /opt/dagster/app
+
+COPY dagster_example/ ./dagster_example/
+
+ENV PYTHONPATH=/opt/dagster/app
+
+EXPOSE 4000
+
+CMD ["dagster", "code-server", "start", "-h", "0.0.0.0", "-p", "4000", "-m", "dagster_example"]
